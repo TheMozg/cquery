@@ -64,6 +64,19 @@ lsVersionedTextDocumentIdentifier::AsTextDocumentIdentifier() const {
   return result;
 }
 
+std::string find_and_replace(const std::string& str, const std::string& match,
+        const std::string& replacement)
+{
+    size_t pos = 0;
+    std::string newstr = str;
+    while ((pos = newstr.find(match, pos)) != std::string::npos)
+    {
+         newstr.replace(pos, match.length(), replacement);
+         pos += replacement.length();
+    }
+    return newstr;
+}
+
 // Reads a JsonRpc message. |read| returns the next input character.
 optional<std::string> ReadJsonRpcContentFrom(
     std::function<optional<char>()> read) {
@@ -123,6 +136,17 @@ optional<std::string> ReadJsonRpcContentFrom(
       return nullopt;
     }
     content += *c;
+  }
+
+  if (client_root != "" && daemon_root != "") {
+      size_t index = client_root.find(":");
+      if (index == 1) {
+        std::string client_root_uri = "/" + find_and_replace(client_root,":","%3A");
+        std::string client_root_alt = find_and_replace(client_root,"/","\\\\");
+
+        content = find_and_replace(content,client_root_uri,daemon_root);
+        content = find_and_replace(content,client_root_alt,daemon_root);
+      }
   }
 
   RecordInput(content);
@@ -241,8 +265,19 @@ void lsBaseOutMessage::Write(std::ostream& out) {
   JsonWriter json_writer{&writer};
   ReflectWriter(json_writer);
 
-  out << "Content-Length: " << output.GetSize() << "\r\n\r\n"
-      << output.GetString();
+  std::string s = output.GetString();
+
+  if (client_root != "" && daemon_root != "") {
+      size_t index = client_root.find(":");
+      if (index == 1) {
+        std::string client_root_uri = "/" + find_and_replace(client_root,":","%3A");
+        s = find_and_replace(s, daemon_root, client_root_uri);
+      }
+  }
+
+  out << "Content-Length: " << s.size() << "\r\n\r\n"
+      << s;
+
   out.flush();
 }
 
