@@ -54,7 +54,7 @@ std::string g_init_options;
 Config* g_config;
 
 std::string client_root = "";
-std::string daemon_root = "";
+std::string server_root = "";
 
 namespace {
 
@@ -91,9 +91,9 @@ Other command line options:
          https://github.com/cquery-project/cquery/wiki/Initialization-options
   --client-root <path>
                 Path to workspace root on the client. If set, this path is
-                replaced with --daemon-root path in all input LSP messages.
+                replaced with --server-root path in all input LSP messages.
                 Example: c:/dev/vscode-remote
-  --daemon-root <path>
+  --server-root <path>
                 Path to project root on the remote server. If set, this path is
                 replaced with --client-root path in all output LSP messages.
                 Example: /home/user/myproject
@@ -408,8 +408,8 @@ int main(int argc, char** argv, const char** env) {
     client_root = options["--client-root"];
   }
 
-  if (HasOption(options, "--daemon-root")) {
-    daemon_root = options["--daemon-root"];
+  if (HasOption(options, "--server-root")) {
+    server_root = options["--server-root"];
   }
 
   // Setup logging ASAP.

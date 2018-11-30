@@ -138,15 +138,14 @@ optional<std::string> ReadJsonRpcContentFrom(
     content += *c;
   }
 
-  if (client_root != "" && daemon_root != "") {
-      size_t index = client_root.find(":");
-      if (index == 1) {
-        std::string client_root_uri = "/" + find_and_replace(client_root,":","%3A");
+  if (client_root != "" && server_root != "") {
+      std::string client_root_uri = client_root;
+      if (client_root.find(":") == 1) {
         std::string client_root_alt = find_and_replace(client_root,"/","\\\\");
-
-        content = find_and_replace(content,client_root_uri,daemon_root);
-        content = find_and_replace(content,client_root_alt,daemon_root);
+        content = find_and_replace(content,client_root_alt,server_root);
+        client_root_uri = "/" + find_and_replace(client_root,":","%3A");
       }
+      content = find_and_replace(content,client_root_uri,server_root);
   }
 
   RecordInput(content);
@@ -267,12 +266,12 @@ void lsBaseOutMessage::Write(std::ostream& out) {
 
   std::string s = output.GetString();
 
-  if (client_root != "" && daemon_root != "") {
-      size_t index = client_root.find(":");
-      if (index == 1) {
-        std::string client_root_uri = "/" + find_and_replace(client_root,":","%3A");
-        s = find_and_replace(s, daemon_root, client_root_uri);
+  if (client_root != "" && server_root != "") {
+      std::string client_root_uri = client_root;
+      if (client_root.find(":") == 1) {
+        client_root_uri = "/" + find_and_replace(client_root,":","%3A");
       }
+      s = find_and_replace(s, server_root, client_root_uri);
   }
 
   out << "Content-Length: " << s.size() << "\r\n\r\n"

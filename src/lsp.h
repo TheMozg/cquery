@@ -103,7 +103,7 @@ struct lsResponseError {
 /////////////////////////////////////////////////////////////////////////////
 
 extern std::string client_root;
-extern std::string daemon_root;
+extern std::string server_root;
 
 struct lsDocumentUri {
   static lsDocumentUri FromPath(const AbsolutePath& path);
